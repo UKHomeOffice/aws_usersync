@@ -1,0 +1,43 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/aws/aws-sdk-go",
+			"repository": "https://github.com/aws/aws-sdk-go",
+			"revision": "8aa49b7df483d06102fd8b61bf02268e7697d51c",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/aws/aws-sdk-go/service/iam",
+			"repository": "https://github.com/aws/aws-sdk-go",
+			"revision": "f27a3c110a4dc66d598c16bdc4f88236784c4c53",
+			"branch": "master",
+			"path": "/service/iam"
+		},
+		{
+			"importpath": "github.com/lsegal/gucumber",
+			"repository": "https://github.com/lsegal/gucumber",
+			"revision": "e8116c9c66e641e9f81fc0a79fac923dfc646378",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/shiena/ansicolor",
+			"repository": "https://github.com/shiena/ansicolor",
+			"revision": "a5e2b567a4dd6cc74545b8a4f27c9d63b9e7735b",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/stretchr/testify/assert",
+			"repository": "https://github.com/stretchr/testify",
+			"revision": "f5520455607c0233cb6d7b056f71b22c1d265ef1",
+			"branch": "master",
+			"path": "/assert"
+		},
+		{
+			"importpath": "github.com/vaughan0/go-ini",
+			"repository": "https://github.com/vaughan0/go-ini",
+			"revision": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1",
+			"branch": "master"
+		}
+	]
+}
