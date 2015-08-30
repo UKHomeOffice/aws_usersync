@@ -38,6 +38,40 @@
 			"repository": "https://github.com/vaughan0/go-ini",
 			"revision": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1",
 			"branch": "master"
+		},
+		{
+			"importpath": "golang.org/x/net",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "7654728e381988afd88e58cabfd6363a5ea91810",
+			"branch": "master"
+		},
+		{
+			"importpath": "golang.org/x/net/dict",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "7654728e381988afd88e58cabfd6363a5ea91810",
+			"branch": "master",
+			"path": "/dict"
+		},
+		{
+			"importpath": "golang.org/x/net/html",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "7654728e381988afd88e58cabfd6363a5ea91810",
+			"branch": "master",
+			"path": "/html"
+		},
+		{
+			"importpath": "golang.org/x/text/encoding",
+			"repository": "https://go.googlesource.com/text",
+			"revision": "048335754d9992416d49a15d2ec1016fc3c95a13",
+			"branch": "master",
+			"path": "/encoding"
+		},
+		{
+			"importpath": "golang.org/x/text/transform",
+			"repository": "https://go.googlesource.com/text",
+			"revision": "048335754d9992416d49a15d2ec1016fc3c95a13",
+			"branch": "master",
+			"path": "/transform"
 		}
 	]
 }

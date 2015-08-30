@@ -36,7 +36,10 @@ func getUserKey(user string, svc *iam.IAM, k []*iam.SSHPublicKeyMetadata) ([]str
 func GetKeys(user string, svc *iam.IAM) ([]string, error) {
   resp, err := svc.ListSSHPublicKeys(&iam.ListSSHPublicKeysInput{
     UserName: aws.String(user),
-  }); if err != nil { return nil, err }
+  });
+  if err != nil {
+    return nil, err
+  }
   if len(resp.SSHPublicKeys) > 0 {
     ukey, err := getUserKey(user, svc, resp.SSHPublicKeys)
     if err != nil {
