@@ -153,7 +153,7 @@ func (u userMap) userSync(grp []string) error {
 	if err := u.setKey(iamsvc); err != nil {
 		return err
 	}
-  var IamUsers []string
+	var IamUsers []string
 	for userStr, data := range u {
 		IamUsers = append(IamUsers, userStr)
 		luser := sync_users.New(userStr, data.group, *sudoGroup, data.keys)
