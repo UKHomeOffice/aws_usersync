@@ -1,6 +1,8 @@
 # aws_usersync
 
-This is used for syncing users from AWS to the local machine as well as their user key. It runs as a daemon and polls with whatever interval you define. By default it is set to run only once and exit, but this can be overriden. 
+This is used for syncing users from AWS to the local machine as well as their user key. It runs as a daemon and polls with whatever interval you define. By default it is set to run only once and exit, but this can be overriden.
+
+The default group people are added to is sudo, but this can be overriden to add users to an alternative group.
 
 This was written primarily to only work with AWS and also CoreOS. The user keys are really for AWS CodeCommit service, however, as they are
 associated with the IAM account, they become accessible through IAM. It isn't particularly obvious that you need to place your key there but this is where it needs to go. 
@@ -18,7 +20,7 @@ cd aws_usersync
 docker run --rm -it -v "$PWD":/go -w /go quay.io/ukhomeofficedigital/go-gb:1.0.0 gb build all
 ```
 
-This will build the application in the current directory create a bin/aws_usersync
+This will build the application in the current directory creating a bin/aws_usersync binary
 
 To run the application you need to set environment variables or have relevant access to IAM:
 
@@ -36,7 +38,7 @@ export AWS_SECRET_ACCESS_KEY=30302499439434
 ./bin/aws_usersync -o=false -i=5 -g="group1,group2,group3"
 ```
 
-*Note*
+##### Notes
 This is new and needs some cleanup on the code really and improving as it's a bit jumbled together in areas, but there are retrospective
 issues raised for things, to clean things up. 
 
