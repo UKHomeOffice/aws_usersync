@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/user"
+//	"os/user"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -107,14 +107,14 @@ func (u userMap) printMap() {
 	}
 }
 
-func addUser(usrStr string, group string, sgroup string, keys []string) {
-	luser := coreos_users.New(usrStr, group, sgroup, keys)
-	out, err := luser.Sync()
-	if err != nil {
-		stderr("Error syncing users: %v", err)
-	}
-	stdout("User Info ..... :: %v", out)
-}
+//func addUser(usrStr string, group string, sgroup string, keys []string) {
+//	luser := coreos_users.New(usrStr, group, sgroup, keys)
+//	out, err := luser.Sync()
+//	if err != nil {
+//		stderr("Error syncing users: %v", err)
+//	}
+//	stdout("User Info ..... :: %v", out)
+//}
 
 // Return the difference between iam users and local users as array
 func (u userMap) diffUsers() ([]string) {
@@ -131,22 +131,35 @@ func (u userMap) diffUsers() ([]string) {
 	return diffusers
 }
 
+// get a list of the local users and get a list of the iam users
+// return the differences and then remove any local user not in iam
+// addUser has to occur first to add iam users on local machine to know
+// an accurate difference
+func (u userMap) userClean() {
+	for _, usr := range u.diffUsers() {
+		ignoreUsers := []string{"root", "core"}
+		if stringInSlice(usr, ignoreUsers) {
+			continue
+		}
+		stdout("Removing local user: %v as not in the Group List", usr)
+		if err := coreos_users.RemoveUser(usr); err != nil {
+			stderr("Error removing user: %v", err)
+		}
+	}
+}
 
-// Loop through all the users
+// Loop through all the users and add user locally to main which will call sync
+// we need to call dokeys on if the user exists or not so need to check the error message
+// for whether the user exists or not and run it anyway unless some other error
 func (u userMap) loopUsers() {
 	for userStr, data := range u {
-		if _, err := user.Lookup(userStr); err != nil {
-			addUser(userStr, data.group, *sudoGroup, data.keys)
+		luser := coreos_users.New(userStr, data.group, *sudoGroup, data.keys)
+		out, err := luser.Sync()
+		if err != nil {
+			stderr("Error syncing users: %v", err)
 		}
-		for _, usr := range u.diffUsers() {
-			ignoreUsers := []string{"root", "core"}
-			if stringInSlice(usr, ignoreUsers) {
-				continue
-			}
-			stdout("Removing local user: %v as not in the Group List", usr)
-			if err := coreos_users.RemoveUser(usr); err != nil {
-				stderr("Error removing user: %v", err)
-			}
+		if len(out) >= 1 {
+			stdout("User Info ..... :: %v", out)
 		}
 	}
 }

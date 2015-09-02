@@ -87,27 +87,27 @@ func GetArrayDiff(k1 []string, k2 []string) ([]string) {
 }
 
 // Loop through the keys and call add key to add key to the box
-func addKeys(l *user.User, kp string, ks []string) error {
-	for _, key := range ks {
-		Output = append(Output, fmt.Sprintf("Calling addkey to add key\n"))
-		if err := addKey(l, kp, key); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-
-// Add the users SSH key onto the system
-func addKey(u *user.User, keypath string, key string) error {
-	f, err := os.OpenFile(keypath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0640)
+func Keys(l *user.User, kp string, ks []string) error {
+//	f, err := os.OpenFile(kp, os.O_WRONLY|os.O_CREATE, 0640)
+  fmt.Printf("keys: %v", ks)
+	f, err := os.Create(kp)
 	defer f.Close()
 	if err != nil {
 		return err
 	}
-	if _, err := f.WriteString(key); err != nil {
+	w := bufio.NewWriter(f)
+	for _, k := range ks {
+		fmt.Fprintln(w, k)
+	}
+	w.Flush()
+	if err := setPerms(l, kp); err != nil {
 		return err
 	}
+	return nil
+}
+
+// Set permissions on file
+func setPerms(u *user.User, keypath string) error {
 	gid, err := strconv.Atoi(u.Gid)
 	uid, err := strconv.Atoi(u.Uid)
 	if err != nil {
@@ -116,38 +116,71 @@ func addKey(u *user.User, keypath string, key string) error {
 	if err := os.Chown(keypath, uid, gid); err != nil {
 		return err
 	}
-	Output = append(Output, fmt.Sprintf("Adding key to %v for user %v\n", keypath, u.Username))
 	return nil
 }
 
+// Add the users SSH key onto the system
+//func addKey(u *user.User, keypath string, key string) error {
+//	Output = append(Output, fmt.Sprintf("Calling addkey to add key %v for user: %v\n", key[0:15], u.Username))
+//	f, err := os.OpenFile(keypath, os.O_WRONLY|os.O_CREATE, 0640)
+//	defer f.Close()
+//	if err != nil {
+//		return err
+//	}
+//	if _, err := f.WriteString(key); err != nil {
+//		return err
+//	} else {
+//		f.Close()
+//	}
+//	gid, err := strconv.Atoi(u.Gid)
+//	uid, err := strconv.Atoi(u.Uid)
+//	if err != nil {
+//		return err
+//	}
+//	if err := os.Chown(keypath, uid, gid); err != nil {
+//		return err
+//	}
+//	return nil
+//}
+
 // Add carriage return for new array elements
-func addNewLine(s1 []string) []string {
-	var newslice []string
-	for i, e := range s1 {
-		if i == 0 {
-			newslice = append(newslice, e)
+//func addNewLine(s1 []string) []string {
+//	if (len(s1) >= 1) {
+//		var newslice []string
+//		for i, e := range s1 {
+//			if i == 0 {
+//				newslice = append(newslice, e)
+//				continue
+//			}
+//			newslice = append(newslice, fmt.Sprintf("\n%v", e))
+//		}
+//		return newslice
+//	} else {
+//		return s1
+//	}
+//}
+
+// Get the keys of user if there are any locally if not then add keys from iam.
+// if there are keys for the user then find out if there are more local keys than there are in iam in which case
+// set it to delete keys locally that are no longer in iam otherwise, just add the key differences
+func (l *awsUser) DoKeys() error {
+	keys := l.Keys
+	keyPath := authKeysFilePath(l.localUser)
+ 	keys, _ = l.getKeys(keyPath)
+	writekeys := true
+	if keys != nil {
+		fmt.Println("keys are nil")
+		if (len(keys) == len(l.Keys)) {
+			if len(GetArrayDiff(keys, l.Keys)) == 0 {
+				Output = append(Output, fmt.Sprintf("No new keys"))
+				writekeys = false
+			}
 		} else {
-			s := fmt.Sprintf("\n%v", e)
-			newslice = append(newslice, s)
+			keys = l.Keys
 		}
 	}
-	return newslice
-}
-// Get the keys of user and add keys that are not already there including differences
-func (l *awsUser) DoKeys() error {
-	keyPath := authKeysFilePath(l.localUser)
- 	keys, err := l.getKeys(keyPath)
-	if err != nil {
-		Output = append(Output, fmt.Sprintf("Users Key doesn't exist so adding\n"))
-		keys := addNewLine(l.Keys)
-		if err := addKeys(l.localUser, keyPath, keys); err != nil {
-			return err
-		}
-	} else {
-		Output = append(Output, fmt.Sprintf("User has Keys so finding differences\n"))
-		diffkeys := GetArrayDiff(keys, l.Keys)
-		keys = addNewLine(diffkeys)
-		if err := addKeys(l.localUser, keyPath, keys); err != nil {
+	if writekeys == true {
+		if err := Keys(l.localUser, keyPath, keys); err != nil {
 			return err
 		}
 	}
@@ -190,23 +223,28 @@ func GetAllUsers() ([]string, error) {
 
 // Add user onto the system using useradd exec
 func (l *awsUser) addUser() error {
-	CMD_ARGS   := []string{"-p", "123", "-U", "-m", l.iamUser, "-G", l.SudoGroup}
-	_, err := exec.Command("useradd", CMD_ARGS...).Output()
-	if err != nil {
-		return err
-	} else {
+	if l.localUser == nil {
+		CMD_ARGS   := []string{"-p", "123", "-U", "-m", l.iamUser, "-G", l.SudoGroup}
+		_, err := exec.Command("useradd", CMD_ARGS...).Output()
+		if err != nil {
+			return err
+		}
+		Output = append(Output, fmt.Sprintf("Creating user %v", l.iamUser))
 		lusr, _ := user.Lookup(l.iamUser)
 		l.localUser = lusr
 	}
-	out := fmt.Sprintf("Creating user %v", l.iamUser)
-	Output = append(Output, out)
 	return nil
 }
 
 // Sync all users and keys onto the coreos host this is the primary function
 func (l *awsUser) Sync() ([]string, error) {
-	if err := l.addUser(); err != nil {
-		return nil, err
+	usr, err := user.Lookup(l.iamUser)
+	if err != nil {
+		if err := l.addUser(); err != nil {
+			return nil, err
+		}
+	} else {
+		l.localUser = usr
 	}
 	if err := l.DoKeys(); err != nil {
 		return nil, err
