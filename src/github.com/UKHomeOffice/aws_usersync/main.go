@@ -104,21 +104,6 @@ func (u userMap) printMap() {
 	}
 }
 
-// Return the difference between iam users and local users as array
-func (u userMap) diffUsers() []string {
-	var iamusers []string
-	localusers, err := sync_users.GetAllUsers()
-	stdout("Localusers: %v", localusers)
-	if err != nil {
-		stderr("An error occured grabbing users from system: %v", err)
-	}
-	for user, _ := range u {
-		iamusers = append(iamusers, user)
-	}
-	diffusers := sync_users.GetArrayDiff(iamusers, localusers)
-	return diffusers
-}
-
 // Take in the channels and loop continuously through until we need to break
 // syncing uses with whatever the time interval supplied is
 func (u userMap) process(grp []string, doneChan chan bool, stopChan chan bool, interval int) {
