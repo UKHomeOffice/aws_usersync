@@ -126,7 +126,6 @@ func (l *awsUser) DoKeys() error {
 	keys, _ = l.getKeys(keyPath)
 	writekeys := true
 	if keys != nil {
-		fmt.Println("keys are nil")
 		if len(keys) == len(l.Keys) {
 			if len(GetArrayDiff(keys, l.Keys)) == 0 {
 				Output = append(Output, fmt.Sprintf("No new keys"))
