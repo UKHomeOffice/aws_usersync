@@ -4,14 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
-//	"os/user"
+	//	"os/user"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 
-	"github.com/UKHomeOffice/coreos_awsusermgt/coreos_iam"
-	"github.com/UKHomeOffice/coreos_awsusermgt/coreos_users"
+	"github.com/UKHomeOffice/aws_usersync/sync_iam"
+	"github.com/UKHomeOffice/aws_usersync/sync_users"
 )
 
 const (
@@ -64,18 +64,18 @@ func splitGroups(g string) []string {
 // check if string is in a slice array
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
-  	if b == a {
-    	return true
-    }
-  }
-  return false
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 // Set the key in the structure for the user fetched from iam or delete user from
 // structure if the user hasn't set a key
 func (u userMap) setKey(svc *iam.IAM) {
 	for user, struc := range u {
-		keys, err := coreos_iam.GetKeys(user, svc)
+		keys, err := sync_iam.GetKeys(user, svc)
 		if err != nil {
 			stderr("Error occurred getting keys: %v", err)
 		}
@@ -95,7 +95,7 @@ func (u userMap) setIamUsers(svc *iam.IAM, g []string) {
 		if err != nil {
 			stderr("Error getting Group: %v, %v", grp, err)
 		}
-		for _, user := range coreos_iam.GetIamUsers(resp) {
+		for _, user := range sync_iam.GetIamUsers(resp) {
 			u[user] = &userData{group: grp}
 		}
 	}
@@ -107,19 +107,10 @@ func (u userMap) printMap() {
 	}
 }
 
-//func addUser(usrStr string, group string, sgroup string, keys []string) {
-//	luser := coreos_users.New(usrStr, group, sgroup, keys)
-//	out, err := luser.Sync()
-//	if err != nil {
-//		stderr("Error syncing users: %v", err)
-//	}
-//	stdout("User Info ..... :: %v", out)
-//}
-
 // Return the difference between iam users and local users as array
-func (u userMap) diffUsers() ([]string) {
+func (u userMap) diffUsers() []string {
 	var iamusers []string
-	localusers, err := coreos_users.GetAllUsers()
+	localusers, err := sync_users.GetAllUsers()
 	stdout("Localusers: %v", localusers)
 	if err != nil {
 		stderr("An error occured grabbing users from system: %v", err)
@@ -127,7 +118,7 @@ func (u userMap) diffUsers() ([]string) {
 	for user, _ := range u {
 		iamusers = append(iamusers, user)
 	}
-	diffusers := coreos_users.GetArrayDiff(iamusers, localusers)
+	diffusers := sync_users.GetArrayDiff(iamusers, localusers)
 	return diffusers
 }
 
@@ -142,7 +133,7 @@ func (u userMap) userClean() {
 			continue
 		}
 		stdout("Removing local user: %v as not in the Group List", usr)
-		if err := coreos_users.RemoveUser(usr); err != nil {
+		if err := sync_users.RemoveUser(usr); err != nil {
 			stderr("Error removing user: %v", err)
 		}
 	}
@@ -153,7 +144,7 @@ func (u userMap) userClean() {
 // for whether the user exists or not and run it anyway unless some other error
 func (u userMap) loopUsers() {
 	for userStr, data := range u {
-		luser := coreos_users.New(userStr, data.group, *sudoGroup, data.keys)
+		luser := sync_users.New(userStr, data.group, *sudoGroup, data.keys)
 		out, err := luser.Sync()
 		if err != nil {
 			stderr("Error syncing users: %v", err)
@@ -171,7 +162,7 @@ func main() {
 
 	// send configuration to aws and then get the svc reference
 	cfg := &aws.Config{Region: aws.String(*region)}
-	iamsvc := coreos_iam.GetIamClient(cfg)
+	iamsvc := sync_iam.GetIamClient(cfg)
 
 	// Make and initaize the map for structure
 	umap := make(userMap)
@@ -186,6 +177,6 @@ func main() {
 	umap.loopUsers()
 
 	// Print data structure
-//	umap.printMap()
+	//	umap.printMap()
 
 }

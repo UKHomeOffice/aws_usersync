@@ -1,14 +1,14 @@
-package coreos_users
+package sync_users
 
 import (
 	"bufio"
-	"os/user"
-	"path/filepath"
+	"fmt"
 	"os"
 	"os/exec"
-	"fmt"
-	"strings"
+	"os/user"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 var Output []string
@@ -23,7 +23,7 @@ type awsUser struct {
 	Group     string
 	SudoGroup string
 	Keys      []string
-  localUser *user.User
+	localUser *user.User
 }
 
 // Initiate the user function
@@ -54,7 +54,7 @@ func RemoveUser(usr string) error {
 		return err
 	}
 	CMD := "userdel"
-	CMD_ARGS := []string{"-r",  u.Username}
+	CMD_ARGS := []string{"-r", u.Username}
 	if _, err := exec.Command(CMD, CMD_ARGS...).Output(); err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func RemoveUser(usr string) error {
 }
 
 // Compare the keys to find what keys are missing locally compared to what is in IAM
-func GetArrayDiff(k1 []string, k2 []string) ([]string) {
+func GetArrayDiff(k1 []string, k2 []string) []string {
 	var diff []string
 	for i := 0; i < 2; i++ {
 		for _, s1 := range k1 {
@@ -117,18 +117,17 @@ func setPerms(u *user.User, keypath string) error {
 	return nil
 }
 
-
 // Get the keys of user if there are any locally if not then add keys from iam.
 // if there are keys for the user then find out if there are more local keys than there are in iam in which case
 // set it to replace the keys
 func (l *awsUser) DoKeys() error {
 	keys := l.Keys
 	keyPath := authKeysFilePath(l.localUser)
- 	keys, _ = l.getKeys(keyPath)
+	keys, _ = l.getKeys(keyPath)
 	writekeys := true
 	if keys != nil {
 		fmt.Println("keys are nil")
-		if (len(keys) == len(l.Keys)) {
+		if len(keys) == len(l.Keys) {
 			if len(GetArrayDiff(keys, l.Keys)) == 0 {
 				Output = append(Output, fmt.Sprintf("No new keys"))
 				writekeys = false
@@ -182,7 +181,7 @@ func GetAllUsers() ([]string, error) {
 // Add user onto the system using useradd exec
 func (l *awsUser) addUser() error {
 	if l.localUser == nil {
-		CMD_ARGS   := []string{"-p", "123", "-U", "-m", l.iamUser, "-G", l.SudoGroup}
+		CMD_ARGS := []string{"-p", "123", "-U", "-m", l.iamUser, "-G", l.SudoGroup}
 		_, err := exec.Command("useradd", CMD_ARGS...).Output()
 		if err != nil {
 			return err
