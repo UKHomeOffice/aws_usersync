@@ -3,15 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-	"strings"
-	"time"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/UKHomeOffice/aws_usersync/sync_iam"
 	"github.com/UKHomeOffice/aws_usersync/sync_users"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
 )
 
 const (
@@ -27,25 +27,14 @@ type userData struct {
 	keys  []string
 }
 
-type intervalProcessor struct {
-	stopChan chan bool
-	doneChan chan bool
-	errChan  chan error
-	interval int
-}
-
-func IntervalProcessor(stopChan, doneChan chan bool, errChan chan error, interval int) *intervalProcessor {
-	return &intervalProcessor{stopChan, doneChan, errChan, interval}
-}
-
 // Define variables flag and standard
 var (
 	keyEncoding = flag.String("e", "SSH", "SSH Key encoding type ssh-rsa or pem, defaults to SSH")
 	sudoGroup   = flag.String("S", "sudo", "Group for the users to be part of for sudo, defaults to sudo group")
 	groups      = flag.String("g", "", "Comma separated list of Group names in AWS")
 	versionShow = flag.Bool("v", false, "Display the version")
-	interval		= flag.Int("i", 30, "The frequency to poll in Minutes, for updates from the cloud provider")
-	onetime			= flag.Bool("o", true, "One time run as oppose polling and daemonizing")
+	interval    = flag.Int("i", 30, "The frequency to poll in Minutes, for updates from the cloud provider")
+	onetime     = flag.Bool("o", true, "One time run as oppose polling and daemonizing")
 	region      = flag.String("r", "eu-west-1", "AWS Region, defaults to eu-west-1")
 	binName     = "coreos_awsusermgt"
 	grpList     []string
@@ -189,7 +178,6 @@ func (u userMap) userSync(grp []string) error {
 	return nil
 }
 
-
 // function main call out into validate code
 func main() {
 	// Make and initaize the map for structure
@@ -211,9 +199,9 @@ func main() {
 	// Set the channels
 	stopChan := make(chan bool)
 	doneChan := make(chan bool)
-	errChan  := make(chan error, 10)
+	errChan := make(chan error, 10)
 
-  go umap.process(grpList, doneChan, stopChan, *interval)
+	go umap.process(grpList, doneChan, stopChan, *interval)
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	for {
