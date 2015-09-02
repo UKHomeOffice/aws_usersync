@@ -122,23 +122,6 @@ func (u userMap) diffUsers() []string {
 	return diffusers
 }
 
-// get a list of the local users and get a list of the iam users
-// return the differences and then remove any local user not in iam
-// addUser has to occur first to add iam users on local machine to know
-// an accurate difference
-func (u userMap) userClean() {
-	for _, usr := range u.diffUsers() {
-		ignoreUsers := []string{"root", "core"}
-		if stringInSlice(usr, ignoreUsers) {
-			continue
-		}
-		stdout("Removing local user: %v as not in the Group List", usr)
-		if err := sync_users.RemoveUser(usr); err != nil {
-			stderr("Error removing user: %v", err)
-		}
-	}
-}
-
 // Loop through all the users and add user locally to main which will call sync
 // we need to call dokeys on if the user exists or not so need to check the error message
 // for whether the user exists or not and run it anyway unless some other error
