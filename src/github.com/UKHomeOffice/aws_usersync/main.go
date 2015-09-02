@@ -34,6 +34,7 @@ var (
 	groups      = flag.String("g", "", "Comma separated list of Group names in AWS")
 	versionShow = flag.Bool("v", false, "Display the version")
 	interval    = flag.Int("i", 30, "The frequency to poll in Minutes, for updates from the cloud provider")
+	ignoreusers = flag.String("I", "root,coreos", "Specify comma separated list of users to ignore on the system so they wont be attempted to be removed")
 	onetime     = flag.Bool("o", true, "One time run as oppose polling and daemonizing")
 	region      = flag.String("r", "eu-west-1", "AWS Region, defaults to eu-west-1")
 	binName     = "coreos_awsusermgt"
@@ -58,19 +59,9 @@ func panicf(f string, a ...interface{}) {
 }
 
 // Split the group list into an array
-func splitGroups(g string) []string {
+func splitString(g string) []string {
 	glist := strings.Split(strings.Replace(g, " ", "", -1), ",")
 	return glist
-}
-
-// check if string is in a slice array
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
 }
 
 // Set the key in the structure for the user fetched from iam or delete user from
@@ -187,7 +178,7 @@ func main() {
 	flagOptions()
 
 	// Get a list of the groups
-	grpList = splitGroups(*groups)
+	grpList = splitString(*groups)
 
 	if *onetime {
 		if err := umap.userSync(grpList); err != nil {

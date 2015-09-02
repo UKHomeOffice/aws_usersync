@@ -18,6 +18,11 @@ const (
 	SSHDir             = ".ssh"
 )
 
+type awsUserList struct {
+	IgnoredUsers []string
+	Users []string
+}
+
 type awsUser struct {
 	iamUser   string
 	Group     string
@@ -45,6 +50,16 @@ func sshDirPath(u *user.User) string {
 // authKeysFilePath returns the path to the authorized_keys file for the user.
 func authKeysFilePath(u *user.User) string {
 	return filepath.Join(sshDirPath(u), AuthorizedKeysFile)
+}
+
+// check if string is in a slice array
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 // Remove users from system that are not in the group list
