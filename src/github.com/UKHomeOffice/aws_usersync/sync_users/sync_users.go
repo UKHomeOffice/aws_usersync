@@ -95,6 +95,7 @@ func Keys(l *user.User, kp string, ks []string) error {
 	}
 	w := bufio.NewWriter(f)
 	for _, k := range ks {
+		Output = append(Output, fmt.Sprintf("adding key %v", k[0:20]))
 		fmt.Fprintln(w, k)
 	}
 	w.Flush()
@@ -136,6 +137,7 @@ func (l *awsUser) DoKeys() error {
 		}
 	}
 	if writekeys == true {
+		Output = append(Output, fmt.Sprintf("keys for %v have changed so readding", l.localUser.Username))
 		if err := Keys(l.localUser, keyPath, keys); err != nil {
 			return err
 		}
@@ -205,5 +207,7 @@ func (l *awsUser) Sync() ([]string, error) {
 	if err := l.DoKeys(); err != nil {
 		return nil, err
 	}
-	return Output, nil
+	out := Output
+	Output = nil
+	return out, nil
 }
