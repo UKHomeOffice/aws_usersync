@@ -88,8 +88,6 @@ func GetArrayDiff(k1 []string, k2 []string) ([]string) {
 
 // Loop through the keys and call add key to add key to the box
 func Keys(l *user.User, kp string, ks []string) error {
-//	f, err := os.OpenFile(kp, os.O_WRONLY|os.O_CREATE, 0640)
-  fmt.Printf("keys: %v", ks)
 	f, err := os.Create(kp)
 	defer f.Close()
 	if err != nil {
@@ -119,50 +117,10 @@ func setPerms(u *user.User, keypath string) error {
 	return nil
 }
 
-// Add the users SSH key onto the system
-//func addKey(u *user.User, keypath string, key string) error {
-//	Output = append(Output, fmt.Sprintf("Calling addkey to add key %v for user: %v\n", key[0:15], u.Username))
-//	f, err := os.OpenFile(keypath, os.O_WRONLY|os.O_CREATE, 0640)
-//	defer f.Close()
-//	if err != nil {
-//		return err
-//	}
-//	if _, err := f.WriteString(key); err != nil {
-//		return err
-//	} else {
-//		f.Close()
-//	}
-//	gid, err := strconv.Atoi(u.Gid)
-//	uid, err := strconv.Atoi(u.Uid)
-//	if err != nil {
-//		return err
-//	}
-//	if err := os.Chown(keypath, uid, gid); err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
-// Add carriage return for new array elements
-//func addNewLine(s1 []string) []string {
-//	if (len(s1) >= 1) {
-//		var newslice []string
-//		for i, e := range s1 {
-//			if i == 0 {
-//				newslice = append(newslice, e)
-//				continue
-//			}
-//			newslice = append(newslice, fmt.Sprintf("\n%v", e))
-//		}
-//		return newslice
-//	} else {
-//		return s1
-//	}
-//}
 
 // Get the keys of user if there are any locally if not then add keys from iam.
 // if there are keys for the user then find out if there are more local keys than there are in iam in which case
-// set it to delete keys locally that are no longer in iam otherwise, just add the key differences
+// set it to replace the keys
 func (l *awsUser) DoKeys() error {
 	keys := l.Keys
 	keyPath := authKeysFilePath(l.localUser)
