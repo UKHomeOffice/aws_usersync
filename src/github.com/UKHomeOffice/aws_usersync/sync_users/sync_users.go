@@ -18,9 +18,10 @@ const (
 	SSHDir             = ".ssh"
 )
 
-type awsUserList struct {
+type UserList struct {
 	IgnoredUsers []string
-	Users []string
+	AwsUsers []string
+	LocalUsers []string
 }
 
 type awsUser struct {
@@ -42,6 +43,20 @@ func New(user string, group string, sgroup string, keys []string) *awsUser {
 	return ustruct
 }
 
+// Create a compare structure
+func CmpNew(iams []string, ignore []string) (*UserList, error) {
+  local, err := GetAllUsers()
+	if err != nil {
+		return nil, err
+	}
+  cmp := &UserList{
+		IgnoredUsers: ignore,
+		AwsUsers: iams,
+		LocalUsers: local,
+	}
+	return cmp, nil
+}
+
 // sshDirPath returns the path to the .ssh dir for the user.
 func sshDirPath(u *user.User) string {
 	return filepath.Join(u.HomeDir, SSHDir)
@@ -60,6 +75,20 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// Clean up any users that are no longer suppose to be on the box
+func (u *UserList) Cleanup() error {
+	delUsers := GetArrayDiff(u.AwsUsers, u.LocalUsers)
+	for _, usr := range delUsers {
+		if stringInSlice(usr, u.IgnoredUsers) {
+			continue
+		}
+		if err := RemoveUser(usr); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Remove users from system that are not in the group list

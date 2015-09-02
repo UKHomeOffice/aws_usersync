@@ -123,7 +123,6 @@ func (u userMap) diffUsers() []string {
 // syncing uses with whatever the time interval supplied is
 func (u userMap) process(grp []string, doneChan chan bool, stopChan chan bool, interval int) {
 	defer close(doneChan)
-
 	for {
 		u.userSync(grp)
 		select {
@@ -154,8 +153,9 @@ func (u userMap) userSync(grp []string) error {
 	if err := u.setKey(iamsvc); err != nil {
 		return err
 	}
-
+  var IamUsers []string
 	for userStr, data := range u {
+		IamUsers = append(IamUsers, userStr)
 		luser := sync_users.New(userStr, data.group, *sudoGroup, data.keys)
 		out, err := luser.Sync()
 		if err != nil {
@@ -165,6 +165,14 @@ func (u userMap) userSync(grp []string) error {
 		if len(out) >= 1 {
 			stdout("User Info ..... :: %v", out)
 		}
+	}
+	ignored := splitString(*ignoreusers)
+	userCmp, err := sync_users.CmpNew(IamUsers, ignored)
+	if err != nil {
+		return err
+	}
+	if err := userCmp.Cleanup(); err != nil {
+		return err
 	}
 	return nil
 }
