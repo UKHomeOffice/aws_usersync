@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/UKHomeOffice/aws_usersync/sync_iam"
 	"github.com/UKHomeOffice/aws_usersync/sync_users"
+	"github.com/UKHomeOffice/aws_usersync/log"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"os"
@@ -41,23 +42,6 @@ var (
 	grpList     []string
 )
 
-// wrapper function for stderr
-func stderr(f string, a ...interface{}) {
-	out := fmt.Sprintf(f, a...)
-	fmt.Fprintln(os.Stderr, strings.TrimSuffix(out, "\n"))
-}
-
-// wrapper function for stdout
-func stdout(f string, a ...interface{}) {
-	out := fmt.Sprintf(f, a...)
-	fmt.Fprintln(os.Stdout, strings.TrimSuffix(out, "\n"))
-}
-
-// wrapper function for panic
-func panicf(f string, a ...interface{}) {
-	panic(fmt.Sprintf(f, a...))
-}
-
 // Split the group list into an array
 func splitString(g string) []string {
 	glist := strings.Split(strings.Replace(g, " ", "", -1), ",")
@@ -70,11 +54,11 @@ func (u userMap) setKey(svc *iam.IAM) error {
 	for user, struc := range u {
 		keys, err := sync_iam.GetKeys(user, svc)
 		if err != nil {
-			stderr("Error occurred getting keys: %v", err)
+			log.Error(fmt.Sprintf("Error occurred getting keys: %v", err))
 			return err
 		}
 		if len(keys) == 0 {
-			stdout("No active keys for \"%v\". Not adding user (get them to add their key)\n", user)
+			log.Debug(fmt.Sprintf("No active keys for %v. Not adding user [get them to add their key]", user))
 			delete(u, user)
 		} else {
 			struc.keys = keys
@@ -88,7 +72,7 @@ func (u userMap) setIamUsers(svc *iam.IAM, g []string) error {
 	for _, grp := range g {
 		resp, err := svc.GetGroup(&iam.GetGroupInput{GroupName: aws.String(grp)})
 		if err != nil {
-			stderr("Error getting Group: %v, %v", grp, err)
+			log.Error(fmt.Sprintf("Error getting Group: %v, %v", grp, err))
 			return err
 		}
 		for _, user := range sync_iam.GetIamUsers(resp) {
@@ -98,11 +82,6 @@ func (u userMap) setIamUsers(svc *iam.IAM, g []string) error {
 	return nil
 }
 
-func (u userMap) printMap() {
-	for user, struc := range u {
-		fmt.Printf("\nUser: %v, Data: %+v\n", user, struc)
-	}
-}
 
 // Take in the channels and loop continuously through until we need to break
 // syncing uses with whatever the time interval supplied is
@@ -142,13 +121,9 @@ func (u userMap) userSync(grp []string) error {
 	for userStr, data := range u {
 		IamUsers = append(IamUsers, userStr)
 		luser := sync_users.New(userStr, data.group, *sudoGroup, data.keys)
-		out, err := luser.Sync()
-		if err != nil {
-			stderr("Error syncing users: %v", err)
+		if err := luser.Sync(); err != nil {
+			log.Error(fmt.Sprintf("Error syncing users: %v", err))
 			return err
-		}
-		if len(out) >= 1 {
-			stdout("User Info ..... :: %v", out)
 		}
 	}
 	ignored := splitString(*ignoreusers)
@@ -191,9 +166,9 @@ func main() {
 	for {
 		select {
 		case err := <-errChan:
-			stderr("Error captured: %v", err.Error())
+			log.Error(fmt.Sprintf("Error captured: %v", err.Error()))
 		case s := <-signalChan:
-			stdout("Captured %v. Exiting...", s)
+			log.Info(fmt.Sprintf("Captured %v. Exiting...", s))
 			close(doneChan)
 		case <-doneChan:
 			os.Exit(0)

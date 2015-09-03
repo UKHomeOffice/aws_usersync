@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"github.com/UKHomeOffice/aws_usersync/log"
 )
-
-var Output []string
 
 const (
 	AuthorizedKeysFile = "authorized_keys"
@@ -100,8 +99,10 @@ func RemoveUser(usr string) error {
 	CMD := "userdel"
 	CMD_ARGS := []string{"-r", u.Username}
 	if _, err := exec.Command(CMD, CMD_ARGS...).Output(); err != nil {
+		log.Error(fmt.Sprintf("Error deleting user %v", usr))
 		return err
 	}
+	log.Info(fmt.Sprintf("Deleted user %v", usr))
 	return nil
 }
 
@@ -139,7 +140,7 @@ func Keys(l *user.User, kp string, ks []string) error {
 	}
 	w := bufio.NewWriter(f)
 	for _, k := range ks {
-		Output = append(Output, fmt.Sprintf("adding key %v", k[0:20]))
+		log.Info(fmt.Sprintf("adding key %v", k[0:20]))
 		fmt.Fprintln(w, k)
 	}
 	w.Flush()
@@ -173,7 +174,7 @@ func (l *awsUser) DoKeys() error {
 	if keys != nil {
 		if len(keys) == len(l.Keys) {
 			if len(GetArrayDiff(keys, l.Keys)) == 0 {
-				Output = append(Output, fmt.Sprintf("No new keys"))
+				log.Debug("No new keys found, nothing to do")
 				writekeys = false
 			}
 		} else {
@@ -181,7 +182,7 @@ func (l *awsUser) DoKeys() error {
 		}
 	}
 	if writekeys == true {
-		Output = append(Output, fmt.Sprintf("keys for %v have changed so readding", l.localUser.Username))
+		log.Debug(fmt.Sprintf("keys for %v have changed so adding all keys", l.localUser.Username))
 		if err := Keys(l.localUser, keyPath, keys); err != nil {
 			return err
 		}
@@ -204,6 +205,7 @@ func (l *awsUser) getKeys(keyPath string) ([]string, error) {
 		for scanner.Scan() {
 			keys = append(keys, scanner.Text())
 		}
+		log.Debug(fmt.Sprintf("Keys for %v  : %v", keyPath, keys))
 		return keys, scanner.Err()
 	}
 }
@@ -220,6 +222,7 @@ func GetAllUsers() ([]string, error) {
 	for scanner.Scan() {
 		users = append(users, strings.Split(scanner.Text(), ":")[0])
 	}
+	log.Debug(fmt.Sprintf("Got a list of local users: %v", users))
 	return users, scanner.Err()
 }
 
@@ -231,7 +234,7 @@ func (l *awsUser) addUser() error {
 		if err != nil {
 			return err
 		}
-		Output = append(Output, fmt.Sprintf("Creating user %v", l.iamUser))
+		log.Info(fmt.Sprintf("Creating user %v", l.iamUser))
 		lusr, _ := user.Lookup(l.iamUser)
 		l.localUser = lusr
 	}
@@ -239,19 +242,19 @@ func (l *awsUser) addUser() error {
 }
 
 // Sync all users and keys onto the coreos host this is the primary function
-func (l *awsUser) Sync() ([]string, error) {
+func (l *awsUser) Sync() error {
 	usr, err := user.Lookup(l.iamUser)
 	if err != nil {
 		if err := l.addUser(); err != nil {
-			return nil, err
+			log.Debug("Failed on calling addUser")
+			return err
 		}
 	} else {
 		l.localUser = usr
 	}
 	if err := l.DoKeys(); err != nil {
-		return nil, err
+		log.Debug("Failed on calling DoKeys")
+		return err
 	}
-	out := Output
-	Output = nil
-	return out, nil
+ 	return nil
 }
