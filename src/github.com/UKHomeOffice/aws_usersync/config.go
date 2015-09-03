@@ -4,11 +4,12 @@ import (
  "fmt"
  "os"
  "flag"
+ "github.com/UKHomeOffice/aws_usersync/log"
 )
 
 func checkGroups() {
   if *groups == "" {
-    fmt.Println("Groups are not specified. You must specify a list of comma separated groups")
+    log.Fatal("Groups are not specified. You must specify a list of comma separated groups")
     os.Exit(1)
   }
 }
@@ -27,6 +28,9 @@ func checkOptions() {
   } else {
     printVersion()
     checkGroups()
+    if *logLevel != "" {
+      log.SetLevel(*logLevel)
+    }
   }
 }
 func flagOptions() {

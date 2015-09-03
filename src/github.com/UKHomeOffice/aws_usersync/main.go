@@ -37,6 +37,7 @@ var (
 	interval    = flag.Int("i", 30, "The frequency to poll in Minutes, for updates from the cloud provider")
 	ignoreusers = flag.String("I", "root,coreos", "Specify comma separated list of users to ignore on the system so they wont be attempted to be removed")
 	onetime     = flag.Bool("o", true, "One time run as oppose polling and daemonizing")
+	logLevel		= flag.String("L", "", "Set the log level: Error, Info, Debug")
 	region      = flag.String("r", "eu-west-1", "AWS Region, defaults to eu-west-1")
 	binName     = "coreos_awsusermgt"
 	grpList     []string
