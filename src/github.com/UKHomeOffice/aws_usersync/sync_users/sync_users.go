@@ -81,6 +81,7 @@ func (u *UserList) Cleanup() error {
 	delUsers := GetArrayDiff(u.AwsUsers, u.LocalUsers)
 	for _, usr := range delUsers {
 		if stringInSlice(usr, u.IgnoredUsers) {
+			log.Debug(fmt.Sprintf("User %v is in ignored users %v not deleting", usr, u.IgnoredUsers))
 			continue
 		}
 		if err := RemoveUser(usr); err != nil {
