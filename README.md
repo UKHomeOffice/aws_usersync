@@ -38,6 +38,11 @@ export AWS_SECRET_ACCESS_KEY=30302499439434
 ./bin/aws_usersync -o=false -i=5 -g="group1,group2,group3"
 ```
 
+For debugging issues you can run it in debug mode
+```
+./bin/aws_usersync -o=false -i=5 -g="group1,group2,group3" -L=debug
+```
+
 ##### Notes
 This is new and needs some cleanup on the code really and improving as it's a bit jumbled together in areas, but there are retrospective
 issues raised for things, to clean things up. 

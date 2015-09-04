@@ -138,11 +138,13 @@ func Keys(l *user.User, kp string, ks []string) error {
 	defer f.Close()
 	if err != nil {
 		return err
+		log.Error(fmt.Sprintf("Error creating %v", kp))
 	}
+	log.Debug(fmt.Sprintf("Created file %v writing keys %v", kp, ks))
 	w := bufio.NewWriter(f)
 	for _, k := range ks {
-		log.Info(fmt.Sprintf("adding key %v", k[0:20]))
 		fmt.Fprintln(w, k)
+		log.Info(fmt.Sprintf("adding key %v", k[0:20]))
 	}
 	w.Flush()
 	if err := setPerms(l, kp); err != nil {
@@ -168,25 +170,26 @@ func setPerms(u *user.User, keypath string) error {
 // if there are keys for the user then find out if there are more local keys than there are in iam in which case
 // set it to replace the keys
 func (l *awsUser) DoKeys() error {
-	keys := l.Keys
 	keyPath := authKeysFilePath(l.localUser)
-	keys, _ = l.getKeys(keyPath)
+	keys, _ := l.getKeys(keyPath)
 	writekeys := true
 	if keys != nil {
 		if len(keys) == len(l.Keys) {
 			if len(GetArrayDiff(keys, l.Keys)) == 0 {
-				log.Debug("No new keys found, nothing to do")
 				writekeys = false
+				log.Debug("No new keys found, nothing to do")
 			}
 		} else {
 			keys = l.Keys
 		}
+	} else {
+		keys = l.Keys
 	}
 	if writekeys == true {
-		log.Debug(fmt.Sprintf("keys for %v have changed so adding all keys", l.localUser.Username))
 		if err := Keys(l.localUser, keyPath, keys); err != nil {
 			return err
 		}
+		log.Debug(fmt.Sprintf("Adding keys %v for %v", keys, l.localUser.Username))
 	}
 	return nil
 }
@@ -206,7 +209,7 @@ func (l *awsUser) getKeys(keyPath string) ([]string, error) {
 		for scanner.Scan() {
 			keys = append(keys, scanner.Text())
 		}
-		log.Debug(fmt.Sprintf("Keys for %v  : %v", keyPath, keys))
+		log.Debug(fmt.Sprintf("Current keys on host for %v  : %v", keyPath, keys))
 		return keys, scanner.Err()
 	}
 }
