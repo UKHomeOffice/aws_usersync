@@ -11,6 +11,32 @@ associated with the IAM account, they become accessible through IAM. It isn't pa
 
 If a user logs in to AWS Console and goes to AWS IAM Identity Access Management and then their own user, there is the codecommit section at the bottom. Users can paste in their public key in there, or multiple and make them active. This tool will only sync active keys, if you make a key inactive, then it will replace the keys on the box with only the active ones. 
 
+#### IAM POLICY
+
+Below is the policy that needs to be associated with the instances you are provisioning. Once you have created this, you can assign this to instances to give the relevant access to the instance to get the keys / users / groups.
+
+```
+{
+   "Version": "2012-10-17",
+   "Statement": [
+       {
+           "Sid": "Stmt1442396947000",
+           "Effect": "Allow",
+           "Action": [
+               "iam:GetGroup",
+               "iam:GetSSHPublicKey",
+               "iam:GetUser",
+               "iam:ListSSHPublicKeys"
+           ],
+           "Resource": [
+               "arn:aws:iam::*"
+           ]
+       }
+   ]
+}
+```
+
+
 ### How to use this
 
 You can build the go application by running:
