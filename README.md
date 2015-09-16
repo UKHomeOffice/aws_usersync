@@ -15,7 +15,8 @@ If a user logs in to AWS Console and goes to AWS IAM Identity Access Management 
 
 Below is the policy that needs to be associated with the instances you are provisioning. Once you have created this, you can assign this to instances to give the relevant access to the instance to get the keys / users / groups.
 
-```{
+```
+{
    "Version": "2012-10-17",
    "Statement": [
        {
@@ -32,7 +33,8 @@ Below is the policy that needs to be associated with the instances you are provi
            ]
        }
    ]
-}```
+}
+```
 
 
 ### How to use this
