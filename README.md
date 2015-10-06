@@ -1,5 +1,7 @@
 # aws_usersync
 
+[![Build Status](https://travis-ci.org/UKHomeOffice/aws_usersync.svg?branch=master)](https://travis-ci.org/UKHomeOffice/aws_usersync)
+
 This is used for syncing users from AWS to the local machine as well as their user key. It runs as a daemon and polls with whatever interval you define. By default it is set to run only once and exit, but this can be overriden.
 
 The default group people are added to is sudo, but this can be overriden to add users to an alternative group.
