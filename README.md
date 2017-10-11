@@ -1,6 +1,6 @@
 # aws_usersync
 
-[![Build Status](https://travis-ci.org/UKHomeOffice/aws_usersync.svg?branch=master)](https://travis-ci.org/UKHomeOffice/aws_usersync)
+[![Build Status](https://travis-ci.org/uswitch/aws_usersync.svg?branch=master)](https://travis-ci.org/uswitch/aws_usersync)
 
 This is used for syncing users from AWS to the local machine as well as their user key. It runs as a daemon and polls with whatever interval you define. By default it is set to run only once and exit, but this can be overriden.
 
@@ -43,9 +43,9 @@ Below is the policy that needs to be associated with the instances you are provi
 
 You can build the go application by running:
 ```
-git clone git@github.com:UKHomeOffice/aws_usersync.git
+git clone git@github.com:uswitch/aws_usersync.git
 cd aws_usersync
-docker run --rm -it -v "$PWD":/go -w /go quay.io/ukhomeofficedigital/go-gb:1.0.0 gb build all
+docker run --rm -it -v "$PWD":/go -w /go quay.io/uswitchdigital/go-gb:1.0.0 gb build all
 ```
 
 This will build the application in the current directory creating a bin/aws_usersync binary
