@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/UKHomeOffice/aws_usersync/log"
+	"github.com/uswitch/aws_usersync/log"
 )
 
 const (

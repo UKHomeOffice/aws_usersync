@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/UKHomeOffice/aws_usersync/log"
+	"github.com/uswitch/aws_usersync/log"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"

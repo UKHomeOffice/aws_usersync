@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/UKHomeOffice/aws_usersync/log"
-	"github.com/UKHomeOffice/aws_usersync/sync_iam"
-	"github.com/UKHomeOffice/aws_usersync/sync_users"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/uswitch/aws_usersync/log"
+	"github.com/uswitch/aws_usersync/sync_iam"
+	"github.com/uswitch/aws_usersync/sync_users"
 )
 
 const (
