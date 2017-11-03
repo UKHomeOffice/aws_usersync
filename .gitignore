@@ -1,1 +1,3 @@
-aws_usersync
+bin/
+.DS_Store
+pkg/
