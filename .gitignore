@@ -1,1 +1,4 @@
-aws_usersync
+vendor/
+bin/
+release/
+*.swp
