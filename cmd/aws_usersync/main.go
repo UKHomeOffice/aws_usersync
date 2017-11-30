@@ -16,8 +16,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-const (
-	version = "0.1.1"
+var (
+	// version for the build
+	version = "0.1.2"
+	// GitSHA for the build
+	GitSHA = "unknown"
 )
 
 // custom type for maps to userData

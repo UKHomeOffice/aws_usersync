@@ -17,7 +17,7 @@ func checkGroups() {
 
 func printVersion() {
 	if *versionShow {
-		fmt.Printf("%s: %s\n", binName, version)
+		fmt.Printf("%s : %s (git+sha: %s)\n", binName, version, GitSHA)
 		os.Exit(0)
 	}
 }
