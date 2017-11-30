@@ -148,7 +148,7 @@ func Keys(l *user.User, kp string, ks []string) error {
 	w := bufio.NewWriter(f)
 	for _, k := range ks {
 		fmt.Fprintln(w, k)
-		log.Info(fmt.Sprintf("Updating key %v for user %v", k[0:20], l))
+		log.Info(fmt.Sprintf("Updating key %s for user %s", k[0:20], l.Username))
 	}
 	w.Flush()
 	if err := setPerms(l, kp); err != nil {
