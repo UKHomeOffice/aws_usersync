@@ -138,6 +138,13 @@ func GetArrayDiff(k1 []string, k2 []string) []string {
 
 // Loop through the keys and call add key to add key to the box
 func Keys(l *user.User, kp string, ks []string) error {
+	if _, err := os.Stat(sshDirPath(l)); os.IsNotExist(err) {
+		log.Info(fmt.Sprintf(".ssh directory not found - creating %v", sshDirPath(l)))
+		if err := os.Mkdir(sshDirPath(l), 700); err != nil {
+			log.Error(fmt.Sprintf("Error creating directory %v", sshDirPath(l)))
+			return err
+		}
+	}
 	f, err := os.Create(kp)
 	defer f.Close()
 	if err != nil {
