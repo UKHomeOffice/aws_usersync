@@ -1,18 +1,18 @@
 NAME=aws_usersync
-AUTHOR=ukhomeofficedigital
+AUTHOR=Jon Shanks
 AUTHOR_EMAIL=jon.shanks@gmail.com
 REGISTRY=quay.io
 ROOT_DIR=${PWD}
 HARDWARE=$(shell uname -m)
 GIT_SHA=$(shell git --no-pager describe --always --dirty)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
-VERSION ?= $(shell awk '/Version.*=/ { print $$3 }' cmd/aws_usersync/main.go | sed 's/"//g')
+VERSION ?= $(shell awk '/version .*=/ { print $$3 }' cmd/aws_usersync/main.go | sed 's/"//g')
 DEPS=$(shell go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
 PACKAGES=$(shell go list ./...)
 LFLAGS ?= -X main.GitSHA=${GIT_SHA}
-VETARGS ?= -asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -structtags -unsafeptr
+VETARGS ?= -asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -unsafeptr
 
-.PHONY: test build static release lint cover vet glide-install
+.PHONY: test build static release lint cover vet
 
 default: build
 
@@ -23,8 +23,8 @@ golang:
 build:
 	@echo "--> Running the tests"
 	@if [ ! -d "vendor" ]; then \
-    make glide-install; \
-  fi
+          go mod vendor; \
+        fi
 	@echo "--> Compiling the project"
 	mkdir -p bin
 	GOOS=linux go build -ldflags "${LFLAGS}" -o bin/${NAME} cmd/${NAME}/*.go
@@ -32,7 +32,7 @@ build:
 static: golang deps
 	@echo "--> Compiling the static binary"
 	mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags "-w ${LFLAGS}" -o bin/${NAME} cmd/${NAME}/*.go
+	CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags "-w ${LFLAGS}" -o bin/${NAME}-${VERSION}-linux-amd64 cmd/${NAME}/*.go
 
 docker-release:
 	@echo "--> Building a release image"
@@ -78,15 +78,10 @@ clean:
 	rm -rf ./bin 2>/dev/null
 	rm -rf ./release 2>/dev/null
 
-glide-install:
-	@echo "--> Installing dependencies"
-	@go get github.com/Masterminds/glide
-	@glide install --strip-vendor
-
 test: deps
 	@echo "--> Running the tests"
 	@if [ ! -d "vendor" ]; then \
-		make glide-install; \
+		go mod vendor; \
   fi
 	@go test -v ${PACKAGES}
 	@$(MAKE) vet
