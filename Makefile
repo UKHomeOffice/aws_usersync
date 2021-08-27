@@ -12,7 +12,7 @@ PACKAGES=$(shell go list ./...)
 LFLAGS ?= -X main.GitSHA=${GIT_SHA}
 VETARGS ?= -asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -unsafeptr
 
-.PHONY: test build static release lint cover vet
+.PHONY: test build static release lint vet
 
 default: build
 
@@ -83,6 +83,4 @@ test: deps
 	@if [ ! -d "vendor" ]; then \
 		go mod vendor; \
   fi
-	@go test -v ${PACKAGES}
 	@$(MAKE) vet
-	@$(MAKE) cover
