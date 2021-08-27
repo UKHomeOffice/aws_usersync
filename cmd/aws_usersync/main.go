@@ -18,7 +18,7 @@ import (
 
 var (
 	// version for the build
-	version = "0.1.2"
+	version = "0.2.0"
 	// GitSHA for the build
 	GitSHA = "unknown"
 )
@@ -39,7 +39,7 @@ var (
 	group       = flag.String("g", "", "The group in AWS that contains the users")
 	versionShow = flag.Bool("v", false, "Display the version")
 	interval    = flag.Int("i", 30, "The frequency to poll in Minutes, for updates from the cloud provider")
-	ignoreusers = flag.String("I", "root,core", "Specify comma separated list of users to ignore on the system so they wont be attempted to be removed")
+	ignoreusers = flag.String("I", "root,core,fleet,systemd-timesync,systemd-coredump,systemd-oom,systemd-timesync,systemd-coredump", "Specify comma separated list of users to ignore on the system so they wont be attempted to be removed")
 	onetime     = flag.Bool("o", true, "One time run as oppose polling and daemonizing")
 	logLevel    = flag.String("L", "", "Set the log level: Error, Info, Debug")
 	region      = flag.String("r", "eu-west-1", "AWS Region, defaults to eu-west-1")
